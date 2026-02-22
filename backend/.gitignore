@@ -1,18 +1,12 @@
 # Dependencies
 node_modules/
 
-# Build output
-dist/
-dist-ssr/
-build/
-
 # Environment variables
 .env
 .env.local
 .env.*.local
 .env.production
 .env.staging
-*.local
 
 # Logs
 logs/
@@ -20,7 +14,6 @@ logs/
 npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
-lerna-debug.log*
 
 # OS files
 .DS_Store
@@ -28,19 +21,17 @@ Thumbs.db
 desktop.ini
 
 # IDE / Editor
-.vscode/*
-!.vscode/extensions.json
+.vscode/
 .idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
 *.swp
 *.swo
 *~
 *.sublime-project
 *.sublime-workspace
+
+# Build output
+dist/
+build/
 
 # Coverage
 coverage/
