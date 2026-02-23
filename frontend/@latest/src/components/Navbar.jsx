@@ -40,8 +40,8 @@ export default function Navbar() {
               key={link.path}
               to={link.path}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${isActive(link.path)
-                  ? "bg-teal-500/15 text-teal-400"
-                  : "text-gray-400 hover:text-white hover:bg-white/5"
+                ? "bg-teal-500/15 text-teal-400"
+                : "text-gray-400 hover:text-white hover:bg-white/5"
                 }`}
             >
               {link.label}
@@ -49,6 +49,19 @@ export default function Navbar() {
           ))}
 
           <div className="w-px h-6 bg-white/10 mx-2" />
+
+          <Link
+            to="/documentation"
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1.5 ${isActive("/documentation")
+                ? "bg-teal-500/15 text-teal-400"
+                : "text-gray-400 hover:text-white hover:bg-white/5"
+              }`}
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Docs
+          </Link>
 
           {user ? (
             <div className="flex items-center gap-3">

@@ -51,6 +51,9 @@ export default function Home() {
           { icon: "🔬", title: "Symptom Analysis", desc: "AI analyzes your symptoms against 15+ conditions" },
           { icon: "📊", title: "Risk Scoring", desc: "Precise risk percentage with confidence levels" },
           { icon: "🏥", title: "Find Hospitals", desc: "Locate nearby hospitals and clinics instantly" },
+          { icon: "⚡", title: "Edge AI (Offline)", desc: "Risk predictions with zero internet connection" },
+          { icon: "📷", title: "Body Scanner", desc: "Camera-based sclera & skin screening" },
+          { icon: "🧠", title: "Explainable AI", desc: "See exactly why the AI made its prediction" },
         ].map((feature, i) => (
           <motion.div
             key={i}

@@ -71,8 +71,17 @@ body {
 
 /* ─── Animations ───────────────────────────────────────────── */
 @keyframes pulse-slow {
-  0%, 100% { opacity: 0.4; transform: scale(1); }
-  50% { opacity: 0.8; transform: scale(1.05); }
+
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
 }
 
 .animate-pulse-slow {
@@ -108,4 +117,42 @@ body {
 
 .leaflet-control-attribution a {
   color: #14b8a6 !important;
+}
+
+/* ─── High-Contrast Mode (for rural/elderly users) ─────────── */
+/* Apply .hc class to <body> to activate */
+body.hc {
+  font-size: 18px;
+  letter-spacing: 0.02em;
+}
+
+body.hc .glass-card {
+  background: rgba(15, 23, 42, 0.85);
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+body.hc .input-field {
+  font-size: 1.1rem;
+  padding: 1rem 1.25rem;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+body.hc .input-field:focus {
+  border-color: rgba(20, 184, 166, 0.7);
+  box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.2);
+}
+
+body.hc h1,
+body.hc h2,
+body.hc h3 {
+  font-weight: 800;
+}
+
+body.hc .text-gray-400,
+body.hc .text-gray-500 {
+  color: #d1d5db !important;
+}
+
+body.hc .text-gray-600 {
+  color: #9ca3af !important;
 }

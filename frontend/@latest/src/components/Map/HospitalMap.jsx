@@ -47,33 +47,65 @@ export default function HospitalMap() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    useEffect(() => {
+    // Fetch hospitals for given coordinates
+    const fetchHospitals = async (coords) => {
+        try {
+            setLoading(true);
+            setError(null);
+            const res = await getNearbyHospitals(coords[0], coords[1]);
+            const data = res.data;
+            if (Array.isArray(data)) {
+                setHospitals(data);
+            } else {
+                console.error("Unexpected API response format:", data);
+                setHospitals([]);
+                setError("Received unexpected data format from server");
+            }
+        } catch (err) {
+            console.error("Hospital fetch error:", err?.response?.data || err.message);
+            const status = err?.response?.status;
+            if (status === 400) {
+                setError("Invalid location data. Please try again.");
+            } else if (status === 500) {
+                setError("Server error while fetching hospitals. Please retry.");
+            } else if (err.code === "ERR_NETWORK") {
+                setError("Cannot connect to the server. Make sure the backend is running.");
+            } else {
+                setError("Failed to fetch nearby hospitals. Please retry.");
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Get user location and fetch hospitals
+    const getLocationAndFetch = () => {
         if (!navigator.geolocation) {
             setError("Geolocation is not supported by your browser");
             setLoading(false);
             return;
         }
 
+        setLoading(true);
+        setError(null);
+
         navigator.geolocation.getCurrentPosition(
-            async (pos) => {
+            (pos) => {
                 const coords = [pos.coords.latitude, pos.coords.longitude];
                 setPosition(coords);
-
-                try {
-                    const res = await getNearbyHospitals(coords[0], coords[1]);
-                    setHospitals(res.data);
-                } catch {
-                    setError("Failed to fetch nearby hospitals");
-                } finally {
-                    setLoading(false);
-                }
+                fetchHospitals(coords);
             },
-            () => {
+            (geoError) => {
+                console.error("Geolocation error:", geoError.message);
                 setError("Unable to get your location. Please enable location access.");
                 setLoading(false);
             },
-            { enableHighAccuracy: true, timeout: 10000 }
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
         );
+    };
+
+    useEffect(() => {
+        getLocationAndFetch();
     }, []);
 
     if (loading) {
@@ -95,10 +127,10 @@ export default function HospitalMap() {
                 <span className="text-4xl mb-4">📍</span>
                 <p className="text-red-400 font-medium">{error}</p>
                 <button
-                    onClick={() => window.location.reload()}
+                    onClick={getLocationAndFetch}
                     className="mt-4 px-6 py-2 rounded-lg bg-teal-500/10 text-teal-400 text-sm font-medium hover:bg-teal-500/20 transition-colors"
                 >
-                    Retry
+                    🔄 Retry
                 </button>
             </div>
         );

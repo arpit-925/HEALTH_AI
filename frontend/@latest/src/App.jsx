@@ -7,6 +7,9 @@ import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Hospitals from "./pages/Hospitals";
 
+import TransparencyDashboard from "./pages/TransparencyDashboard";
+import Documentation from "./pages/Documentation";
+
 function App() {
   return (
     <AuthProvider>
@@ -18,6 +21,9 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/login" element={<Login />} />
             <Route path="/hospitals" element={<Hospitals />} />
+
+            <Route path="/transparency" element={<TransparencyDashboard />} />
+            <Route path="/documentation" element={<Documentation />} />
           </Routes>
         </BrowserRouter>
       </HealthProvider>
