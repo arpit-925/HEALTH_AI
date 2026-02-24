@@ -1,152 +1,109 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useAuth } from "../context/AuthContext";
-import { useHealth } from "../context/HealthContext";
-import { useNavigate } from "react-router-dom";
-import RiskResult from "./RiskResult";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import axios from "axios";
 
-export default function SymptomForm() {
-  const [formData, setFormData] = useState({
-    age: "",
-    gender: "",
-    symptoms: "",
-  });
-  const { user } = useAuth();
-  const { prediction, loading, error, analyzeSymptoms, clearPrediction } = useHealth();
-  const navigate = useNavigate();
+export default function SymptomForm({ mode }) {
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!user) {
-      navigate("/login");
-      return;
-    }
-
-    try {
-      await analyzeSymptoms(formData);
-    } catch {
-      // error is handled by context
+  const getInitialMessage = (mode) => {
+    switch (mode) {
+      case "symptom":
+        return "🔬 Let's analyze your symptoms. Please describe how you're feeling.";
+      case "risk":
+        return "📊 Let's calculate your risk score. Please tell me your age, BMI, and glucose level.";
+      case "hospital":
+        return "🏥 Tell me your location and I will find nearby hospitals.";
+      default:
+        return "👋 Hey, I am Health Guard AI. How can I help you today?";
     }
   };
 
-  const handleReset = () => {
-    clearPrediction();
-    setFormData({ age: "", gender: "", symptoms: "" });
+  const [messages, setMessages] = useState([
+    { role: "assistant", content: getInitialMessage(mode) }
+  ]);
+
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setMessages([
+      { role: "assistant", content: getInitialMessage(mode) }
+    ]);
+  }, [mode]);
+
+  const sendMessage = async () => {
+    if (!input.trim()) return;
+
+    const userMessage = { role: "user", content: input };
+    const updatedMessages = [...messages, userMessage];
+
+    setMessages(updatedMessages);
+    setInput("");
+    setLoading(true);
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/ai/explain",
+        { prediction: input },
+        { timeout: 300000 } // 5 min — Ollama can be slow
+      );
+
+      setMessages([
+        ...updatedMessages,
+        { role: "assistant", content: response.data.explanation }
+      ]);
+    } catch (error) {
+      console.error("Chatbot error:", error.message);
+      setMessages([
+        ...updatedMessages,
+        { role: "assistant", content: "⚠ Sorry, something went wrong. Please make sure Ollama is running." }
+      ]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.2 }}
-      className="glass-card rounded-2xl p-8 w-full max-w-lg border border-white/10"
+      className="glass-card rounded-2xl p-6 w-full max-w-2xl border border-white/10 flex flex-col h-[500px]"
     >
-      <AnimatePresence mode="wait">
-        {!prediction ? (
-          <motion.form
-            key="form"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onSubmit={handleSubmit}
-            className="space-y-5"
+      <div className="flex-1 overflow-y-auto space-y-3 pr-2">
+        {messages.map((msg, index) => (
+          <div
+            key={index}
+            className={`p-3 rounded-xl max-w-[80%] ${msg.role === "assistant"
+                ? "bg-gray-800 text-white"
+                : "bg-teal-500 text-white self-end ml-auto"
+              }`}
           >
-            <div className="text-center mb-2">
-              <h3 className="text-lg font-semibold text-white">Symptom Analysis</h3>
-              <p className="text-sm text-gray-400">Enter your details for AI-powered health assessment</p>
-            </div>
+            {msg.content}
+          </div>
+        ))}
 
-            {/* Error message */}
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-2 rounded-xl text-sm">
-                {error}
-              </div>
-            )}
-
-            {/* Age */}
-            <div className="space-y-1.5">
-              <label className="text-xs text-gray-400 uppercase tracking-wider font-medium">Age</label>
-              <input
-                type="number"
-                placeholder="Enter your age"
-                required
-                min="1"
-                max="120"
-                className="input-field"
-                value={formData.age}
-                onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-              />
-            </div>
-
-            {/* Gender */}
-            <div className="space-y-1.5">
-              <label className="text-xs text-gray-400 uppercase tracking-wider font-medium">Gender</label>
-              <select
-                required
-                className="input-field"
-                value={formData.gender}
-                onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-              >
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-
-            {/* Symptoms */}
-            <div className="space-y-1.5">
-              <label className="text-xs text-gray-400 uppercase tracking-wider font-medium">Symptoms</label>
-              <textarea
-                placeholder="e.g. headache, fatigue, dizziness, chest pain"
-                required
-                rows={3}
-                className="input-field resize-none"
-                value={formData.symptoms}
-                onChange={(e) => setFormData({ ...formData, symptoms: e.target.value })}
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3.5 rounded-xl font-semibold text-white bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 transition-all duration-300 shadow-lg shadow-teal-500/25 hover:shadow-teal-500/40 disabled:opacity-50"
-            >
-              {loading ? (
-                <span className="inline-flex items-center gap-2">
-                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                  Analyzing...
-                </span>
-              ) : (
-                "🔬 Analyze My Risk"
-              )}
-            </button>
-
-            {!user && (
-              <p className="text-center text-xs text-gray-500">
-                You'll need to{" "}
-                <button type="button" onClick={() => navigate("/login")} className="text-teal-400 hover:text-teal-300">
-                  sign in
-                </button>{" "}
-                to analyze symptoms
-              </p>
-            )}
-          </motion.form>
-        ) : (
-          <motion.div
-            key="result"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <RiskResult data={prediction} onReset={handleReset} />
-          </motion.div>
+        {loading && (
+          <div className="text-gray-400 text-sm">
+            Health Guard AI is typing...
+          </div>
         )}
-      </AnimatePresence>
+      </div>
+
+      <div className="flex gap-2 mt-4">
+        <input
+          type="text"
+          placeholder="Describe your symptoms..."
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          className="flex-1 input-field"
+          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+        />
+        <button
+          onClick={sendMessage}
+          className="px-4 py-2 bg-teal-500 rounded-xl text-white hover:bg-teal-400"
+        >
+          Send
+        </button>
+      </div>
     </motion.div>
   );
 }

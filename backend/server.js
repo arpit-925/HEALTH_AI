@@ -6,6 +6,8 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/auth.js";
 import predictRoutes from "./routes/predict.js";
 import hospitalRoutes from "./routes/hospitals.js";
+import aiRoutes from "./routes/ai.js";
+import diabetesRoutes from "./routes/diabetesRoutes.js";
 
 dotenv.config();
 
@@ -19,6 +21,8 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/predict", predictRoutes);
 app.use("/api/hospitals", hospitalRoutes);
+app.use("/api/ai", aiRoutes);
+app.use("/api/diabetes", diabetesRoutes);
 
 // ─── Health Check ───────────────────────────────────────────
 app.get("/api/health", (req, res) => {
